@@ -1,0 +1,31 @@
+jobs:
+  - job: web_deployment
+    displayName: Static Web App Deployment 🚀
+    steps:
+      - task: file-creator@6
+        displayName: "[Web] Creating .env file 📜"
+        inputs:
+          filepath: "./apps/web/.env"
+          filecontent: |
+            VITE_API_LOCATION=$(VITE_API_LOCATION)
+            VITE_CLIENT_ID=$(VITE_CLIENT_ID)
+            VITE_TENANT_ID=$(VITE_TENANT_ID)
+      - task: Bash@3
+        displayName: "Installing Packages 🔧"
+        inputs:
+          targetType: "inline"
+          script: |
+            yarn
+      - task: Bash@3
+        displayName: "Turbo Build 🔨"
+        inputs:
+          targetType: "inline"
+          script: |
+            yarn turbo run build --filter=web
+      - task: AzureStaticWebApp@0
+        displayName: "Deploy Azure Static Web App"
+        inputs:
+          config_file_location: "apps/web"
+          app_location: "apps/web/dist"
+          is_static_export: false
+          azure_static_web_apps_api_token: "$(SWA_API_TOKEN)"

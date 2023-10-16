@@ -1,0 +1,46 @@
+parameters:
+  - name: "isProd"
+    type: string
+  - name: "sourceBranch"
+    type: string
+
+stages:
+  # Dev Environment Deployment
+  - ${{ if contains(parameters.sourceBranch, 'refs/heads/dev') }}:
+      - stage: dev_deployment
+        dependsOn: []
+        displayName: "[Web] Dev Deployment"
+        variables:
+          - group: AKIVAS_WEBSITE-DEV
+
+        jobs:
+          - template: swa.pipelines.yaml
+
+  # Stage Environment Deployment
+  - ${{ if contains(parameters.sourceBranch, 'refs/heads/stage') }}:
+      - stage: stage_deployment
+        dependsOn: []
+        displayName: "[Web] Stage Deployment"
+        variables:
+          - group: AKIVAS_WEBSITE-STAGE
+
+        jobs:
+          - template: swa.pipelines.yaml
+
+  # Drills Environment Deployment
+  - ${{ if eq(parameters.isProd, 'true') }}:
+      - stage: drill_deployment
+        dependsOn: []
+        displayName: "[Web] Drills Deployment"
+        variables:
+          - group: "AKIVAS_WEBSITE-DRILLS"
+        jobs:
+          - template: swa.pipelines.yaml
+      # Operational Environment Deployment
+      - stage: operational_deployment
+        dependsOn: []
+        displayName: "[Web] Operational Deployment"
+        variables:
+          - group: "AKIVAS_WEBSITE-OPERATIONAL"
+        jobs:
+          - template: swa.pipelines.yaml

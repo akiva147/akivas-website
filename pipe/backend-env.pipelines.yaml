@@ -1,0 +1,9 @@
+env:
+  "PORT": "$(PORT)"
+  "AZURE_CLIENT_ID": "$(AZURE_CLIENT_ID)"
+  "AZURE_TENANT_ID": "$(AZURE_TENANT_ID)"
+  "DB_CONNECTION": "$(DB_CONNECTION)"
+  "CLIENT_URL": "$(CLIENT_URL)"
+  "COMMIT_ID": "$(Build.BuildId)"
+  "BUILD_ID": "$(Build.SourceVersion)"
+  "SOURCE_BRANCH": "$(Build.SourceBranchName)"

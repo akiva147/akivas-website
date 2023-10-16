@@ -1,0 +1,62 @@
+trigger:
+  - main
+  - stage
+  - dev
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: "AKIVAS-PROJECT"
+  - name: "isProd"
+    value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: DevOps/DevOps
+      ref: main
+
+stages:
+  - stage:
+    displayName: "Trivy Security Checks"
+    jobs:
+      - job:
+        displayName: "Trivy Security Check"
+        steps:
+          - task: trivy@1
+            inputs:
+              version: "latest"
+              path: "."
+              exitCode: "0"
+
+  - template: pipelines-templates/docker-full-pipeline-tmp.yml@templates
+    parameters:
+      imageName: akivas-website-web
+      imageType: "Client"
+      dockerfilePath: "/apps/web/Dockerfile"
+      dockerContainerPort: 3000
+      dockerBuildContext: "."
+      aksDeploymentName: akivas-website-web
+      aksHelmValues: $(Build.SourcesDirectory)/untar-chart/aks-agamim-app-deployment/client-values.yaml
+      aksAppPath: "/"
+      aksHealthProbPath: "/"
+      dnsAppName: akivas-website
+      envValFilePath: "pipe/web-env.pipelines.yaml"
+      variableGroupPrefix: "AKIVAS-PROJECT"
+
+  - template: pipelines-templates/docker-full-pipeline-tmp.yml@templates
+    parameters:
+      imageName: akivas-website-be
+      imageType: "Server"
+      dockerfilePath: "/apps/backend/Dockerfile"
+      dockerContainerPort: 5000
+      dockerBuildContext: "."
+      aksDeploymentName: akivas-website-be
+      aksHelmValues: $(Build.SourcesDirectory)/untar-chart/aks-agamim-app-deployment/server-values.yaml
+      aksAppPath: "/"
+      aksHealthProbPath: "/health"
+      dnsAppName: akivas-website-be
+      envValFilePath: "pipe/backend-env.pipelines.yaml"
+      variableGroupPrefix: "AKIVAS-PROJECT"
